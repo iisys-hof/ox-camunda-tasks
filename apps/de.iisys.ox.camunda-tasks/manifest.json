@@ -1,0 +1,5 @@
+{ 
+	"namespace": "io.ox/tasks/main",
+	"path": "de.iisys.ox.camunda-tasks/register",
+	"requires": "tasks"
+}
