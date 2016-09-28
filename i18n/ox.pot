@@ -1,0 +1,91 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ox-camunda-tasks\n"
+"PO-Revision-Date: DATE\n"
+"Last-Translator: NAME <EMAIL>\n"
+"Language-Team: NAME <EMAIL>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:92
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "Workflow Tasks"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:109
+#: module:de.iisys.ox.camunda-tasks/register
+#: apps/de.iisys.ox.camunda-tasks/register.js:114
+msgid "My Workflow Tasks"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:168
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "private"
+msgstr ""
+
+#. message for screenreaders in case selected task has participants
+#: apps/de.iisys.ox.camunda-tasks/register.js:174
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "has participants"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:199
+#: module:de.iisys.ox.camunda-tasks/register
+#: apps/de.iisys.ox.camunda-tasks/register.js:203
+#: apps/de.iisys.ox.camunda-tasks/register.js:485
+msgid "Not claimed"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:203
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "Claim now!"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:412
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "Empty"
+msgstr ""
+
+#. %1$s due date of a task
+#: apps/de.iisys.ox.camunda-tasks/register.js:479
+#: module:de.iisys.ox.camunda-tasks/register
+#, c-format
+msgid "Due %1$s"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:501
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "Start date"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:513
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "You"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:519
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "Participants"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:529
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "accepted"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:546
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "Actions"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:550
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "Claim"
+msgstr ""
+
+#: apps/de.iisys.ox.camunda-tasks/register.js:572
+#: module:de.iisys.ox.camunda-tasks/register
+msgid "No elements selected"
+msgstr ""
