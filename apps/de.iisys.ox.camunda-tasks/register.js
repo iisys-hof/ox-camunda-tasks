@@ -16,44 +16,48 @@ define('de.iisys.ox.camunda-tasks/register', [
     'io.ox/core/tk/vgrid',
     'io.ox/core/date',
     'gettext!de.iisys.ox.camunda-tasks/register',
+    'de.iisys.ox.camunda-tasks/config',
     'de.iisys.ox.camunda-tasks/demo'
-], function (ext, VGrid, date, gt, DemoTasklist) {
+], function (ext, VGrid, date, gt, config, DemoTasklist) {
 
     'use strict';
 
     console.log('PLUGIN de.iisys.ox.camunda-tasks up and running...');
 
     // config:
-    var CAMUNDA_URL = 'http://127.0.0.1:8080/engine-rest';
-    var CAMUNDA_FRAG_GROUPS = '/group';
-    var CAMUNDA_FRAG_TASKS_GROUP = '/task?candidateGroup=';
-    var CAMUNDA_FRAG_TASK_SORTING = '&sortBy=created&sortOrder=desc';
-    var EXCLUDED_GROUP_TYPE = 'SYSTEM';
+    var CAMUNDA_URL = config.CAMUNDA_URL,
+        CAMUNDA_FRAG_GROUPS = '/group',
+        CAMUNDA_FRAG_TASKS_GROUP = '/task?candidateGroup=',
+        CAMUNDA_FRAG_TASKS_MY = '/task?assignee=',
+        CAMUNDA_FRAG_TASK_SORTING = '&sortBy=created&sortOrder=desc',
+        EXCLUDED_GROUP_TYPE = 'SYSTEM',
+        LIFERAY_URL = config.LIFERAY_URL,
+        LIFERAY_FRAG_USERPROFILE = '/web/guest/profile?userId=',
     
-    var SCROLLPANE_CLASS = 'vgrid-scrollpane-container';
-    var TASK_HEIGHT = 65;
-    var EXTERNAL_TASKS_CLASS = 'external';
+        SCROLLPANE_CLASS = 'vgrid-scrollpane-container',
+        TASK_HEIGHT = 65,
+        EXTERNAL_TASKS_CLASS = 'external',
 
-    var USE_DEMOTASKS = true;
+        USE_DEMOTASKS = config.USE_DUMMY_TASKS;
 
-//    var describedbyID = _.uniqueId('description-');
-    var describedbyID = 'camunda-tasks';
-    var theFolder = 'virtual/flat/tasks/public';
-    var theModel = 'flat/tasks/public';
-    var isInvisible = '';
+    var describedbyID = 'camunda-tasks',
+        theFolder = 'virtual/flat/tasks/public',
+        theModel = 'flat/tasks/public',
+        isInvisible = '',
 
-    var mainFolder;
-    var camundaSubfolders;
-    var ajaxAnimationDiv;
-    var ajaxAnimationDiv_listView;
+        mainFolder, 
+        myTasksFolder,
+        camundaSubfolders,
+        ajaxAnimationDiv,
+        ajaxAnimationDiv_listView,
 
-    var camundaFolderWasClicked = false;
-    var demoFoldersInUse = false;
+        camundaFolderWasClicked = false,
+        demoFoldersInUse = false,
 
-
-    var userId = ox.user;
+        userId = ox.user;
 //  console.log('ox.user_id: '+ox.user_id);
 //  console.log('ox.user: '+ox.user);
+
 
 
     ext.point('io.ox/core/foldertree/tasks/app').extend({
@@ -62,34 +66,86 @@ define('de.iisys.ox.camunda-tasks/register', [
         draw: function () {
 
             this.append(
+                
                 mainFolder = $('<li class="folder selectable virtual open section">')
-                .attr({
-                    id: describedbyID,
-                    'aria-label': '',
-                    'aria-level': 1,
-                    'aria-selected': false,
-                    'data-id': theFolder,
-                    'data-model': theModel,
-                    'role': 'treeitem',
-                    'tabindex': '-1'
-                })
-                .append(
-                    $('<div class="folder-node" role="presentation">')
-                        .css('padding-left', 0)
-                        .append(
-                            $('<div class="folder-arrow"'+isInvisible+'><i class="fa fa-caret-down"></i></div>')
-                                .on('click', function(e) {
-                                    e.preventDefault();
-                                    camundaTasks.toggleFolders();
-                                }),
-                            $('<div class="folder-icon"><i class="fa fa-fw"></i></div>'),
-                            $('<div class="folder-label">')
-                                .text(gt('Group Tasks')),
-                            $('<div class="folder-counter">')
-                        ),
-                    ajaxAnimationDiv = $('<div class="slight-drop-shadow" style="padding-left:25%;">'),
-                    camundaSubfolders = $('<ul class="subfolders" role="group">')
+                    .attr({
+                        id: describedbyID,
+                        'aria-label': '',
+                        'aria-level': 1,
+                        'aria-selected': false,
+                        'data-id': theFolder,
+                        'data-model': theModel,
+                        'role': 'treeitem',
+                        'tabindex': '-1'
+                    })
+                    .append(
+                        $('<div class="folder-node" role="presentation">')
+                            .css('padding-left', 0)
+                            .append(
+                                $('<div class="folder-arrow"'+isInvisible+'><i class="fa fa-caret-down"></i></div>')
+                                    .on('click', function(e) {
+                                        e.preventDefault();
+                                        camundaTasks.toggleFolders();
+                                    }),
+                                $('<div class="folder-icon"><i class="fa fa-fw"></i></div>'),
+                                $('<div class="folder-label">')
+                                    .text(gt('Workflow Tasks')),
+                                $('<div class="folder-counter">')
+                            ),
+                        ajaxAnimationDiv = $('<div class="slight-drop-shadow" style="padding-left:25%;">'),
+                        camundaSubfolders = $('<ul class="subfolders" role="group">')
+                            .append(
+                                $('<li id="camunda_'+userId+'" class="folder selectable camunda" role="treeitem">')
+                                .attr({
+                                    'data-id': userId
+                                })
+                                .append(
+                                    $('<div class="folder-node" role="presentation">')
+                                        .css('padding-left', 0)
+                                        .append(
+                                            $('<div class="folder-arrow invisible"><i class="fa fa-caret-down"></i></div>'),
+                                            $('<div class="folder-icon"><i class="fa fa-fw"></i></div>'),
+                                            $('<div class="folder-label">')
+                                                .text(gt('My Workflow Tasks')),
+                                            $('<div class="folder-counter">')
+                                        )
+                                )
+                                .on('click', null, 
+                                    { userId: userId, name: gt('My Workflow Tasks') },
+                                    camundaTasks.loadCamundaTasks
+                                )
+                            )
                 )
+                
+                /*
+                mainFolder = $('<li class="folder selectable virtual open section">')
+                    .attr({
+                        id: describedbyID,
+                        'aria-label': '',
+                        'aria-level': 1,
+                        'aria-selected': false,
+                        'data-id': theFolder,
+                        'data-model': theModel,
+                        'role': 'treeitem',
+                        'tabindex': '-1'
+                    })
+                    .append(
+                        $('<div class="folder-node" role="presentation">')
+                            .css('padding-left', 0)
+                            .append(
+                                $('<div class="folder-arrow"'+isInvisible+'><i class="fa fa-caret-down"></i></div>')
+                                    .on('click', function(e) {
+                                        e.preventDefault();
+                                        camundaTasks.toggleFolders();
+                                    }),
+                                $('<div class="folder-icon"><i class="fa fa-fw"></i></div>'),
+                                $('<div class="folder-label">')
+                                    .text(gt('Group Tasks')),
+                                $('<div class="folder-counter">')
+                            ),
+                        ajaxAnimationDiv = $('<div class="slight-drop-shadow" style="padding-left:25%;">'),
+                        camundaSubfolders = $('<ul class="subfolders" role="group">')
+                    ) */
             );
 
             camundaTasks.loadCamundaGroups();
@@ -138,17 +194,25 @@ define('de.iisys.ox.camunda-tasks/register', [
                 if(task.due && task.due!==null) {
                     fields.end_time.text(_.noI18n(camundaTasks.getDate(task.due,date.DATE)));
                 }
-                fields.status.attr('class', 'status badge')
-                    .text(gt('Not claimed'))
-                    .hover(function(){
-                        fields.status.toggleClass('badge-important');
-                        var txt = fields.status.text();
-                        fields.status.text(txt==gt('Not claimed') ? gt('Claim now!') : gt('Not claimed'));
-                    })
-                    .on('click', null, task.id, camundaTasks.claimTaskEvent);
-                // no participants:
-                fields.user.hide();
-                fields.userMessage.hide();
+                if(!task.assignee || task.assignee===null) {
+                    fields.status.attr('class', 'status badge')
+                        .text(gt('Not claimed'))
+                        .hover(function(){
+                            fields.status.toggleClass('badge-important');
+                            var txt = fields.status.text();
+                            fields.status.text(txt==gt('Not claimed') ? gt('Claim now!') : gt('Not claimed'));
+                        })
+                        .on('click', null, task.id, camundaTasks.claimTaskEvent);
+
+                    // no participants:
+                    fields.user.hide();
+                    fields.userMessage.hide();
+                } else {
+                    // assignee = participant
+                    fields.user.show();
+                    fields.userMessage.show();
+                }
+  
                 // not private:
                 fields.private_flag.hide();
                 fields.private_flagMessage.hide();
@@ -169,6 +233,7 @@ define('de.iisys.ox.camunda-tasks/register', [
 
         // Ajax calls -----
 
+
         loadCamundaGroups: function() {
             var member = '?member=';
             var url = CAMUNDA_URL+CAMUNDA_FRAG_GROUPS+member+userId;
@@ -182,9 +247,14 @@ define('de.iisys.ox.camunda-tasks/register', [
             if(!camundaFolderWasClicked)
                 camundaTasks.manipulateExistingFolders();
 
+            var taskGroup = e.data,
+                url;
             // then load tasks:
-            var group = e.data;
-            var url = CAMUNDA_URL+CAMUNDA_FRAG_TASKS_GROUP + group.id + CAMUNDA_FRAG_TASK_SORTING;
+            if(taskGroup.userId) {
+                url = CAMUNDA_URL+CAMUNDA_FRAG_TASKS_MY + taskGroup.userId + CAMUNDA_FRAG_TASK_SORTING;
+            } else {
+                url = CAMUNDA_URL+CAMUNDA_FRAG_TASKS_GROUP + taskGroup.id + CAMUNDA_FRAG_TASK_SORTING;
+            }
 
             // show loading spinner:
             var taskList = camundaTasks.getCleanTaskView();
@@ -195,7 +265,11 @@ define('de.iisys.ox.camunda-tasks/register', [
             );
             camundaTasks.animationOnOff(true, ajaxAnimationDiv_listView);
 
-            camundaTasks.sendAsyncRequest('GET', url, camundaTasks.appendTasks, null, group);
+            camundaTasks.sendAsyncRequest('GET', url, camundaTasks.appendTasks, null, taskGroup);
+        },
+
+        loadCamundaMyTasks: function() {
+
         },
 
         claimTaskEvent: function(e) {
@@ -204,12 +278,17 @@ define('de.iisys.ox.camunda-tasks/register', [
         claimTask: function(taskId) {
             var url = CAMUNDA_URL+'/task/'+taskId+'/claim';
             var requestBody = {
-                id : userId
+                userId : userId
             };
             camundaTasks.sendAsyncRequest('POST', url, camundaTasks.claimTaskResult, requestBody, null);
         },
 
         // Ajax calls END -----
+
+        /*
+        appendMyTasksFolder: function(data) {
+
+        }, */
 
         appendFolders: function(data) {
             camundaTasks.animationOnOff(false, ajaxAnimationDiv);
@@ -272,8 +351,13 @@ define('de.iisys.ox.camunda-tasks/register', [
     //       $('.grid-options').css('display','none');
         },
 
-        claimTaskResult: function(data) {
-            console.log('Success: '+JSON.stringify(data));
+        claimTaskResult: function() {
+            // camunda returns no content
+            console.log('Successfully claimed task.');
+            
+            require(['io.ox/core/notifications'], function(notify) {
+                    notify.yell('success','Successfully claimed task.');
+            });
         },
 
 
@@ -396,9 +480,11 @@ define('de.iisys.ox.camunda-tasks/register', [
                         )
                 );
             }
-            infoPanel.append(
-                $('<div>').text(gt('Not claimed')).addClass('state badge')
-            );
+            if(!task.assignee || task.assignee===null) {
+                infoPanel.append(
+                    $('<div>').text(gt('Not claimed')).addClass('state badge')
+                );
+            }
 
             // note/description:
             if(task.description && task.description!==null) {
@@ -419,8 +505,40 @@ define('de.iisys.ox.camunda-tasks/register', [
                 );
             }
 
+            // participants / assignee
+            if(task.assignee && task.assignee!==null) {
+                var theAssignee = task.assignee,
+                    taskUrl = LIFERAY_URL + LIFERAY_FRAG_USERPROFILE + theAssignee;
+                if(theAssignee===userId)
+                    theAssignee = gt('You');
+
+                lePane.append(
+                    $('<div class="participants-view">').append(
+                        $('<fieldset>').append(
+                            $('<legend class="io-ox-label">').append(
+                                $('<h2>').text(gt('Participants'))
+                            ),
+                            $('<ul class="participants-list list-inline">').append(
+                                $('<li class="participant halo-link">').append(
+                                    $('<span class="person accepted">')
+                                        .text(theAssignee)
+                                        .on('click', function(e){
+                                            e.preventDefault();
+                                            window.location.href = taskUrl;
+                                        }),
+                                    $('<span class="sr-only">').text(', '+ gt('accepted')),
+                                    $('<span class="status accepted">').append(
+                                        $('<i class="fa fa-check">')
+                                    )
+                                )
+                            )
+                        )
+                    )
+                );
+            }
+
             // claim
-            if(task.id && task.id!==null) {
+            if(task.id && task.id!==null && (!task.assignee || task.assignee===null)) {
                 lePane.append(
                     $('<div>').append(
                         $('<fieldset>').append(
@@ -507,6 +625,11 @@ define('de.iisys.ox.camunda-tasks/register', [
                 .children('.folder-arrow').children().toggleClass('fa-caret-down fa-fw');
         },
 
+        toggleMyTasksFolder: function() {
+            myTasksFolder.toggleClass('open');
+            myTasksFolder.children()
+                .children('.folder-arrow').children().toggleClass('fa-caret-down fa-caret-right');
+        },
         toggleFolders: function() {
             mainFolder.toggleClass('open');
             mainFolder.children()
@@ -562,7 +685,6 @@ define('de.iisys.ox.camunda-tasks/register', [
         },
 
         reloadClickListener: function(event) {
-            console.log('läuft');
             var sel = camundaSubfolders.children('.selected');
             if(sel.length && sel.length>0) {
 
